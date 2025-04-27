@@ -1,0 +1,298 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLACKOUT RP Pravidla</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+        h1, h2 {
+            color: #00eaff;
+            text-shadow: 0 0 5px #00eaff, 0 0 10px #ff00ff;
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5em;
+        }
+        h2 {
+            font-size: 1.5em;
+            border-bottom: 2px solid #ff00ff;
+            padding-bottom: 5px;
+        }
+        p, li {
+            color: #e0e0e0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+        }
+        /* Watermark styling inspired by BLACKOUT RP logo */
+        .watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 4em;
+            font-weight: bold;
+            color: rgba(0, 234, 255, 0.2);
+            text-shadow: 0 0 10px #ff00ff, 0 0 20px #00eaff;
+            pointer-events: none;
+            z-index: 0;
+            text-transform: uppercase;
+        }
+        @media print {
+            .watermark {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) rotate(-45deg);
+                font-size: 4em;
+                font-weight: bold;
+                color: rgba(0, 234, 255, 0.2);
+                text-shadow: 0 0 10px #ff00ff, 0 0 20px #00eaff;
+                pointer-events: none;
+            }
+            body {
+                background-color: #ffffff;
+                color: #000000;
+            }
+            h1, h2 {
+                color: #000000;
+                text-shadow: none;
+            }
+            p, li {
+                color: #000000;
+            }
+            .container {
+                page-break-after: always;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="watermark">BLACKOUT RP</div>
+    <div class="container">
+        <h1>ZÁKLADNÍ POJMY</h1>
+
+        <h2>RP (Role Play)</h2>
+        <p>RP znamená "Role Play" neboli hraní role. Vždy hraješ za svou postavu, jako by žila ve skutečném světě. Chováš se, mluvíš a rozhoduješ se tak, jak by to dělala ona. Nejde o to, co chceš ty jako hráč, ale co by udělala tvoje postava v dané situaci.</p>
+
+        <h2>LORE</h2>
+        <p>Lore je příběh tvé postavy – odkud pochází, jaký měla život, co ji formovalo, jaké má vztahy, motivace a cíle. Tento příběh pomáhá určit, jak se postava chová, jak mluví a rozhoduje se v různých situacích. Lore postavy by měl být konzistentní a měl by zapadat do logiky RP světa.</p>
+
+        <h2>IC (In Character)</h2>
+        <p>IC znamená "v postavě". Všechno, co tvoje postava říká nebo dělá ve hře, je IC. Např. konverzace s jinou postavou, řízení auta, nákup v obchodě, zákroky jako policista/lékař atd. Všechny tvé akce v RP světě jsou IC.</p>
+
+        <h2>OOC (Out of Character)</h2>
+        <p>OOC znamená "mimo postavu". Používá se, když potřebuješ něco řešit jako hráč, ne jako postava. Například problém s mikrofonem, bugy, nebo vysvětlení mechaniky hry. OOC komunikace by neměla ovlivnit dění ve hře.</p>
+
+        <h2>/ME</h2>
+        <p>Používá se k popisu akce, kterou tvoje postava právě dělá.</p>
+        <p><strong>Příklad:</strong> /me vytahuje z kapsy mobil a něco do něj rychle ťuká.<br>Zobrazí se ostatním hráčům nad tvojí hlavou jako akce.</p>
+
+        <h2>/DO</h2>
+        <p>Používá se k popisu okolních podmínek, stavu nebo k položení otázky pro jinou postavu.</p>
+        <p><strong>Příklad:</strong> /do Na zemi leží zakrvácený nůž. nebo /do Je tvoje postava zraněná?</p>
+        <p><strong>POZOR:</strong> /me a /do není nutnost erpit, avšak pokud osoba která erpí /me nebo /do a snaží se něco zjistit nebo takto postupovat, je nutnost s touto osobou/skupinou spolupracovat.</p>
+
+        <h2>/DOC</h2>
+        <p>Používá se jako odpočet při vykonávání akce. Například když tvoje postava něco trvá – hackování, vytažení nářadí apod.</p>
+        <p><strong>Příklad:</strong> /doc 10 – odpočet 10 sekund.</p>
+
+        <h2>/STAV</h2>
+        <p>Slouží k popisu zdravotního nebo fyzického stavu postavy. Vhodné například po nehodě, střelení nebo zásadním zranění.</p>
+        <p><strong>Příklad:</strong> /stav má prostřelené rameno a krvácí.</p>
+
+        <h2>/ZDE</h2>
+        <p>Slouží jako způsob, jak "umístit nápis/ceduli" na konkrétní místo. Tento text zůstává viditelný na daném místě, kde jsi příkaz zadal, a ostatní hráči jej mohou vidět jako informaci nebo popisek.</p>
+        <p><strong>Příklad:</strong> /zde Tady zaparkovat zákazáno.</p>
+
+        <h1>PRAVIDLA</h1>
+
+        <h2>PASSIVE RP</h2>
+        <p>RPíme v milionovém městě, takže i když není nikdo online, tvoje postava by měla jednat tak, jak by to udělala, kdyby byla v reálném světě a kolem ní byli skuteční lidé. Tohle pravidlo platí pro všechny postavy a zajišťuje, že město bude působit živě, i když zrovna není nikdo v okolí.</p>
+        <p><strong>Striktně zóny pro Passive RP:</strong></p>
+        <ul>
+            <li>Nemocnice</li>
+            <li>Policejní stanice</li>
+            <li>Všechna veřejná a oficiální místa (restaurace, dílny, cloth shopy atd., tetování atd.)</li>
+            <li>Zakázáno unášet v obchodech s oblečením a tetovacích studiích.</li>
+        </ul>
+        <p>Cílem Passive RP je udržet svět živý, ať už se ve hře nacházíš sám nebo s ostatními hráči.</p>
+
+        <h2>MIXING</h2>
+        <p>Mixing znamená používání OOC informací v IC světě. To je zakázáno. Příkladem může být mluvení o mechanikách hry nebo použití Discord jména postavy v IC konverzaci.</p>
+        <p><strong>Příklad:</strong> Pokud použiješ Discord jméno své postavy v RP, porušuješ pravidlo mixing.</p>
+
+        <h2>METAGAMING</h2>
+        <p>Metagaming je využívání informací, které tvoje postava nemůže vědět, ale hráč ano. Například, pokud se tvoje postava dozví něco z livestreamu, Discordu nebo mapy, co by postava nemohla vědět.</p>
+        <p><strong>Příklad:</strong> Pokud sleduješ livestream jiného hráče a na základě toho víš, kde se nachází, je to metagaming.</p>
+
+        <h2>STREAMSNIPING</h2>
+        <p>Streamsniping je zakázaný. Sledování livestreamu jiného hráče za účelem zisku výhody je považováno za podvod.</p>
+
+        <h2>COMBATLOG</h2>
+        <p>Odpojení ze hry během boje nebo RP situace, aby ses vyhnul následkům, je zakázáno.</p>
+        <p><strong>Příklad:</strong> Pokud v boji rychle vypneš hru, abys unikl následkům, porušuješ pravidla combatlogu.</p>
+
+        <h2>COMBATCOMEBACK</h2>
+        <p>Návrat do boje poté, co jsi byl zraněn nebo jsi zemřel, bez adekvátního RP je zakázán.</p>
+
+        <h2>KOS (Kill on Sight)</h2>
+        <p>Zabití hráče bez předchozí interakce nebo důvodu. KOS je zakázané, a každé zabití musí mít odpovídající RP důvod.</p>
+        <p><strong>Příklad:</strong> Pokud bez jakéhokoliv důvodu zabiješ jinou postavu jen tak pro zábavu, jde o porušení pravidla KOS.</p>
+
+        <h2>RDM (Random Death Match)</h2>
+        <p>Náhodné napadání nebo zabíjení hráčů bez IC důvodu. RDM je zakázané a je to porušení pravidel RP.</p>
+        <p><strong>Příklad:</strong> Pokud zabiješ jinou postavu bez toho, abys měl k tomu nějaký důvod nebo příběhový kontext, jedná se o RDM.</p>
+
+        <h2>VDM (Vehicle Death Match)</h2>
+        <p>Používání vozidla jako zbraně k zabíjení nebo ohrožování ostatních postav bez RP důvodu. VDM je zakázané a porušuje pravidla hry.</p>
+        <p><strong>Příklad:</strong> Pokud do někoho najedeš autem jen tak, bez jakéhokoliv příběhového důvodu, jde o VDM.</p>
+
+        <h2>FEAR RP</h2>
+        <p>Tvoje postava by měla realisticky reagovat na ohrožení života. Pokud někdo míří na tvou postavu zbraní, měla by mít strach a jednat podle toho.</p>
+        <p><strong>Příklad:</strong> Pokud na tvoji postavu někdo míří zbraní, nemůžeš jen tak vystartovat nebo utéct bez strachu. Musíš se chovat realisticky a odpovídat na situaci v rámci role.</p>
+        <p><strong>DOGFEAR / JOBFEAR / JAILFEAR</strong></p>
+        <p>Specifické druhy strachu ve hře:</p>
+        <ul>
+            <li><strong>Dogfear:</strong> Strach z policejních psů, kdy postava reaguje na přítomnost psa s úctou a strachem.</li>
+            <li><strong>Jobfear:</strong> Strach o svou práci, například policista se nebude chovat způsobem, který by ho okamžitě připravil o místo.</li>
+            <li><strong>JailFear:</strong> Strach z trestu a vězení, kdy postava nebude provokovat stráže nebo si nevyvolávat konflikt.</li>
+        </ul>
+
+        <h2>COPBAITING</h2>
+        <p>Záměrné provokování policie bez důvodu, pouze za účelem vyvolání konfliktu, je zakázané.</p>
+        <p><strong>Příklad:</strong> Pokud tvoje postava začne provokovat policisty a nutí je k akci bez jakéhokoliv RP důvodu, jde o copbaiting.</p>
+
+        <h2>NVL (Not Valuing Life)</h2>
+        <p>Nevážíš si života své postavy – například pokud tvoje postava dělá věci, které by ji bezpochyby zabily nebo vážně ohrozily, bez jakéhokoliv strachu nebo racionality.</p>
+        <p><strong>Příklad:</strong> Pokud tvoje postava skočí z vysoké budovy, nebo se postaví proti vyzbrojeným gangům bez jakékoliv šance na přežití, porušuje pravidlo NVL.</p>
+
+        <h2>GROSS RP</h2>
+        <p>Zakázané RP scénáře zahrnující násilí, sexuální chování, kanibalismus, pedofilii a další extrémní a nevhodné chování. To je přísně zakázáno a je trestáno přísně.</p>
+        <p><strong>Pravidla pro Gross RP:</strong></p>
+        <ul>
+            <li><strong>Souhlas všech účastníků:</strong> Gross RP může být povoleno pouze v případě, že se všichni zúčastnění hráči předem dohodnou v OOC chatu. Ten, kdo chce tuto akci vykonat, se musí nejprve zeptat ostatních hráčů a získat jejich souhlas.</li>
+            <li><strong>Dohoda v OOC:</strong> Bez souhlasu ostatních účastníků nebude Gross RP povoleno. Pokud je někdo proti takovému RP scénáři, musí se to respektovat a neprovádět žádnou akci, která by to porušovala.</li>
+            <li><strong>Zastavení Gross RP:</strong> Kdykoli během akce: Pokud se někdo během RP cítí nepohodlně nebo se rozhodne, že nechce pokračovat, může to okamžitě oznámit v OOC chatu a akce by měla být přerušena.</li>
+        </ul>
+
+        <h2>POWERGAMING</h2>
+        <p><strong>Nerealistické akce:</strong> Například, když tvoje postava zvedne auto holýma rukama nad hlavu, což je naprosto nereálné a neumožňuje ostatním hráčům reagovat na situaci.</p>
+        <p><strong>Ignorování šance na obranu:</strong> Například, když tvoje postava provede akci, která zcela vylučuje možnost, aby ostatní hráči reagovali nebo se bránili.</p>
+        <p><strong>Pokud jde o zbraně:</strong></p>
+        <ul>
+            <li>Hráč může mít u sebe jednu dlouhou zbraň (například pušku nebo brokovnici) a jednu krátkou zbraň (například pistoli).</li>
+            <li>Počet nábojů musí být reálný a odpovídající typu zbraně. Není možné mít u sebe velmi vysoké množství nábojů, které by postava reálně nenosila.</li>
+        </ul>
+
+        <h2>PRAVIDLÁ PRO TRAFFIC STOP</h2>
+        <p>Pokud tě zastaví policie při silniční kontrole, máš povinnost spolupracovat. Neujížděj bez důvodu, nenapadej policisty a neprovokuj je.</p>
+        <p><strong>Příklad:</strong> Pokud tě policie zastaví a ty se rozhodneš utéct bez důvodu, porušuješ pravidla traffic stop.</p>
+        <p>Je přísně zakázáno zabít policistu během traffic stopu.</p>
+
+        <h2>CK (Character Kill)</h2>
+        <p>Trvalé zabití postavy, kdy její příběh končí a již ji nelze dál hrát. Musí být schválené administrátorem serveru v tiketu.</p>
+        <p><strong>Příklad:</strong> Pokud tvoje postava zemře v RP a její příběh končí, jedná se o CK.</p>
+        <p><strong>JAIL CK:</strong> Postava je poslána do vězení na doživotí – je to RP ukončení jejího příběh, protože postava je uzavřená ve vězení a nelze ji dál hrát.</p>
+        <p><strong>Příklad:</strong> Pokud je tvoje postava odsouzena na doživotí a je uvězněná, její příběh končí v momentě, kdy jde do vězení.</p>
+        <p><strong>SELF CK:</strong> Dobrovolné ukončení příběhu postavy, například sebevraždou nebo jiným dramatickým ukončením.</p>
+
+        <h2>Pravidla pro neutrální frakce</h2>
+        <ul>
+            <li>Majitel frakce zodpovídá za chod a funkčnost frakce.</li>
+            <li>Frakce musí být aktivní aspoň 3x v týdnu.</li>
+            <li>Frakční vozidla slouží pouze k účelům jim určeným a zodpovídá za ně majitel. (žádné vykradání s frakčními vozidly atd.)</li>
+            <li>Majitel se musí aktivně podílet na chodu frakce. (Byli bychom neradi, aby se opakovali stejné chyby typu "jsem majitel a jen beru peníze za chod")</li>
+            <li>Uvítali bychom originální a kreativní dress code pro zaměstnance (avšak toto není nutností, prosím, aby to mělo hlavu a patu)</li>
+            <li>Plánování akcí je vítáno. (avšak vše v rozumné míře, nebojte se využívat ticket pro doplnění informací atd.)</li>
+            <li>Frakce na začátek musí mít aspoň 3 členy.</li>
+            <li>Všichni musí být na frakční discordu až poté co jsi "in-game" přijati do frakce. (Veškeré osoby, které budou mít roli na frakčním DC a nebudou zaměstnání ve frakci, bude majitel frakce potrestán v klasickém "strike systému")</li>
+            <li>Na frakční DC musí mít všichni zaměstnanci ale i občané "IC" jména.</li>
+            <li>Na frakčním DC musí být aspoň 2 členové admin týmu s nejvyššími pravomocemi, avšak nesmí být vůči frakci zaujati. (Viz admin majitel frakce)</li>
+        </ul>
+
+        <h2>Pravidla pro nelegální frakce</h2>
+        <p>Boss frakce zodpovídá za chod, kvalitu a aktivitu své frakce.</p>
+        <p>Pokud má nelegální frakce nějaký dům, vilu či podnik, jako majitel je zapsán Boss frakce. Tento údaj je dohledatelný státními složkami na úřadě.</p>
+        <p>Název frakce nesmí být v rozporu s TOS FiveM (například zakázané názvy jako CJNG apod.).</p>
+        <p>Je přísně zakázáno donášet informace o své nelegální frakci státním složkám (tzn. žádné "práskačství" na vlastní frakci).</p>
+        <p><strong>Dodržování pasivního RP:</strong></p>
+        <p>Je nutné striktně dodržovat pasivní RP – je zakázáno unášet, přepadávat nebo jinak agresivně jednat na veřejných prostranstvích a v podnicích (např. restaurace, bary, kluby).</p>
+        <p>Veřejné prostory zahrnují také: policejní stanice a nemocnice.</p>
+        <p><strong>Omezení a povolení:</strong></p>
+        <ul>
+            <li>Maximální počet členů ve frakci je 20 hráčů.</li>
+            <li>Vykrádání heistů je omezeno na 3 heisty denně na jednu frakci.</li>
+        </ul>
+        <p><strong>Striktní dodržování pravidel proti:</strong></p>
+        <ul>
+            <li><strong>Metagamingu:</strong> (používání OOC informací v RP)</li>
+            <li><strong>Mixování majetku mezi postavami:</strong> (nesmíš převádět peníze, auta, domy apod. mezi vlastními postavami).</li>
+        </ul>
+        <p><strong>Gross RP mezi nelegálními frakcemi:</strong></p>
+        <p>Gross RP (únosy, mučení, vydírání apod.) je automaticky schválené mezi nelegálními frakcemi.</p>
+        <p>Každý hráč má právo kdykoliv během akce zastavit Gross RP pomocí OOC chatu (např. napsáním „STOP GROSS“).</p>
+        <p><strong>Powergaming:</strong></p>
+        <p><strong>Pokud jde o zbraně:</strong></p>
+        <ul>
+            <li>Hráč může mít u sebe jednu dlouhou zbraň (například pušku nebo brokovnici) a jednu krátkou zbraň (například pistoli).</li>
+            <li>Počet nábojů musí být reálný a odpovídající typu zbraně. Není možné mít u sebe velmi vysoké množství nábojů, které by postava reálně nenosila.</li>
+        </ul>
+
+        <h2>Řešení problémů</h2>
+        <p>Vždy je nutné řídit se pokyny admina, který danou situaci řeší.</p>
+        <p>Admin, který situaci řeší, má vždy poslední slovo.</p>
+        <p>Nevhodné chování během řešení problémů (arogance, výsměch, neúcta) může vést k mute nebo banu.</p>
+        <p>Slovní napadání nebo urážení členů administrativního týmu (AT) bude vždy přísně trestáno (mute/ban dle závažnosti).</p>
+    </div>
+</body>
+</html>
